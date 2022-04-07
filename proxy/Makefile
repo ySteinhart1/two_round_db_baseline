@@ -3,18 +3,16 @@ CPPFLAGS = -g -std=c++17
 
 JAVA_HOME = /usr/lib/jvm/java-11-openjdk-amd64
 
-ALL = main keygen libwaffle.so benchmark
+ALL = main keygen benchmark
 
 all: $(ALL)
 
-libwaffle.so: waffle.h waffle.cpp Cache.o FrequencySmoother.o CloudDB.o Record.o
-	$(CXX) $(CPPFLAGS) -shared -I$(JAVA_HOME)/include -I$(JAVA_HOME)/include/linux -o libwaffle.so waffle.cpp Cache.o FrequencySmoother.o CloudDB.o Record.o -pthread -lsodium -lboost_serialization -fPIC
 
 main: main.cpp Cache.o FrequencySmoother.o CloudDB.o Record.o
 	$(CXX) $(CPPFLAGS) main.cpp Cache.o FrequencySmoother.o CloudDB.o Record.o -pthread -lsodium -lboost_serialization -o main
 
-benchmark: benchmark.cpp Cache.o FrequencySmoother.o CloudDB.o Record.o
-	$(CXX) $(CPPFLAGS) benchmark.cpp Cache.o FrequencySmoother.o CloudDB.o Record.o -pthread -lsodium -lboost_serialization -o benchmark
+benchmark: benchmark.cpp CloudDB.o Record.o
+	$(CXX) $(CPPFLAGS) benchmark.cpp CloudDB.o Record.o -pthread -lsodium -lboost_serialization -o benchmark
 
 keygen: keygen.cpp
 	$(CXX) $(CPPFLAGS) keygen.cpp -lsodium -o keygen

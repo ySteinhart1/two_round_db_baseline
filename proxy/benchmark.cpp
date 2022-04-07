@@ -17,8 +17,9 @@
 
 #include <sodium.h>
 
-#include "Cache.hpp"
-#include "FrequencySmoother.hpp"
+#include "Record.hpp"
+#include "CloudDB.hpp"
+
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
@@ -41,7 +42,7 @@ int main(int argc, char* argv[])
 
 	Record* valueRecord;
 
-	CloudDB store;
+	CloudDB store("./secretKeys/sodiumKey");
 
 	FILE* outFile = fopen(outFilePath, "wb");
 
