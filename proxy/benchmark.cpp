@@ -25,6 +25,8 @@ using namespace boost::asio;
 using namespace boost::asio::ip;
 using namespace std::chrono;
 
+#define VALUE_SIZE 1000
+
 
 #define outFilePath "/home/ubuntu/waffle/outFile.txt"
 
@@ -54,7 +56,9 @@ int main(int argc, char* argv[])
         bzero(entry, 1000);
         entry[i / 8] |= 1 << i % 8;
         str_entry = std::string(entry);
-        value = "1";
+        char val[VALUE_SIZE];
+        randombytes_buf(val, VALUE_SIZE);
+        value = std::string(val);
 
 
         char* valueData = (char*)malloc(value.size() + 1);
@@ -63,7 +67,8 @@ int main(int argc, char* argv[])
         store.put(valueRecord);
         delete valueRecord;
 
-        value = "2";
+        randombytes_buf(val, VALUE_SIZE);
+        value = std::string(val);
 
         auto start = high_resolution_clock::now();
 
