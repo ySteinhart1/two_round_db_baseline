@@ -28,7 +28,10 @@ using namespace std::chrono;
 #define VALUE_SIZE 160
 
 
-#define outFilePath "/home/ubuntu/waffle/outFile.txt"
+#define MAX_KEY 10000
+#define VALUE_SIZE 1000
+
+#define outFilePath "./outFile.txt"
 
 int main(int argc, char* argv[])
 {
@@ -39,28 +42,27 @@ int main(int argc, char* argv[])
     }
 
 	std::string operationType;
-	std::string key;
 	std::string value;
 
 	Record* valueRecord;
 
-	CloudDB store("./secretKeys/sodiumKey");
+	CloudDB store("secretKeys/sodiumKey");
 
 	FILE* outFile = fopen(outFilePath, "wb");
 
     float diff;
     std::vector<float> put_times, get_times;
-    std::string entry;
+    std::string key;
+    srand( (unsigned)time( NULL ) );
     for(int i = 0; i < 1000; i++){
-        entry = std::string(std::to_string(i));
-        char val[VALUE_SIZE];
-        randombytes_buf(val, VALUE_SIZE);
-        value = std::string(val);
+        
+        key = std::string(std::to_string(rand() % MAX_KEY));
+        value = "1";
 
 
-        char* valueData = (char*)malloc(value.size() + 1);
+        char* valueData = (char*)malloc(VALUE_SIZE);
         memcpy(valueData, value.c_str(), value.size() + 1);
-        valueRecord = new Record(entry, valueData, value.size() + 1, std::chrono::system_clock::now());
+        valueRecord = new Record(key, valueData, VALUE_SIZE, std::chrono::system_clock::now());
         store.put(valueRecord);
         delete valueRecord;
 
@@ -69,13 +71,17 @@ int main(int argc, char* argv[])
 
         auto start = high_resolution_clock::now();
 
-        valueData = (char*)malloc(value.size() + 1);
+        valueData = (char*)malloc(VALUE_SIZE);
+
         memcpy(valueData, value.c_str(), value.size() + 1);
-        valueRecord = new Record(entry, valueData, value.size() + 1, std::chrono::system_clock::now());
-        store.get(entry);
+        valueRecord = new Record(key, valueData, VALUE_SIZE, std::chrono::system_clock::now());
+
+
+        Record* tmp = store.get(key);
         store.put(valueRecord);
-        delete valueRecord;
         auto stop = high_resolution_clock::now();
+        delete tmp;
+        delete valueRecord;
         put_times.push_back(duration_cast<microseconds>(stop - start).count());
 
         start = high_resolution_clock::now();
@@ -88,6 +94,7 @@ int main(int argc, char* argv[])
         // }
         // else printf("Record not found\n");
         stop = high_resolution_clock::now();
+        delete valueRecord;
         get_times.push_back(duration_cast<microseconds>(stop - start).count());
 
     }
