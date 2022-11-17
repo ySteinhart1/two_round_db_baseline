@@ -10,7 +10,7 @@ CloudDB::CloudDB(std::string keyFileName) : ioc(), sock(ioc) {
 
 	loadKey(keyFileName);
 
-	sock.connect(tcp::endpoint(boost::asio::ip::address::from_string("127.0.0.1"), 3000));
+	sock.connect(tcp::endpoint(boost::asio::ip::address::from_string(DB_IP), DB_PORT));
 
 	msgBuf = buffer((char*)&packetBuf, sizeof(EncryptedPacket));
 	netMsgLenBuf = buffer(&netMsgLen, sizeof(uint32_t));
@@ -71,30 +71,6 @@ Record* CloudDB::get(std::string key) {
 	return record;
 }
 
-void CloudDB::fakeGet(std::string key) {
-	opType = 0;
-	keyLen = key.size();
-
-	write(sock, buffer(&opType, sizeof(uint8_t)));
-	write(sock, buffer(&keyLen, sizeof(uint8_t)));
-	write(sock, buffer(key));
-
-	read(sock, netMsgLenBuf);
-	msgLen = ntohl(netMsgLen);
-
-	uint32_t dataLeft = msgLen;
-
-	uint32_t dataThisIter;
-
-	while(dataLeft > 0) {
-
-		dataThisIter = (dataLeft > PACKET_SIZE) ? CHUNK_SIZE : dataLeft;
-
-		read(sock, msgBuf, transfer_exactly(dataThisIter));
-
-		dataLeft -= dataThisIter;
-	}
-}
 
 void CloudDB::put(Record* record) {
 	opType = 1;

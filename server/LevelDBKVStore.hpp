@@ -24,7 +24,7 @@ public:
 		leveldb::Options options;
 		options.create_if_missing = true;
 		leveldb::Status s = leveldb::DB::Open(options, dbName, &db);
-		if(!s.ok()) std::cerr << "db not opened" << std::endl;
+		if(!s.ok()) {std::cerr << "db not opened" << std::endl; exit(1);}
 	}
 
 	std::string get(std::string key);

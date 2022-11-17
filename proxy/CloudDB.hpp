@@ -7,12 +7,14 @@
 
 #include <sodium.h>
 
+#include "constants.h"
+
 #include "Record.hpp"
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
-#define PACKET_SIZE 4096
+
 #define CHUNK_SIZE (PACKET_SIZE - crypto_secretbox_MACBYTES - crypto_secretbox_NONCEBYTES)
 
 struct EncryptedPacket {
@@ -48,7 +50,6 @@ public:
 	CloudDB(std::string keyFileName);
 
 	Record* get(std::string key);
-	void fakeGet(std::string key);
 
 	void put(Record* record);
 
