@@ -13,7 +13,7 @@ Connection.o: Operation.hpp Connection.hpp Connection.cpp
 	$(CXX) $(CPPFLAGS) -c Connection.cpp
 
 clean:
-	rm main *.o
+  rm *.o ${EXECUTABLES}
 
 cleandb:
-	rm -rf leveldb/*
+	rm -rf leveldb/db
