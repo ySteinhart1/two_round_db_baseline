@@ -8,22 +8,62 @@
 #include <boost/asio.hpp>
 #include <algorithm>
 #include <unordered_map>
+#include <unordered_set>
+#include <cctype>
+
+#include <boost/filesystem.hpp>
+
+#include <boost/archive/tmpdir.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/unordered_set.hpp>
+// #include <boost/serialization/unordered_map.hpp>
+
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 
 #include <unistd.h>
 #include <arpa/inet.h>
 
 #include <sodium.h>
+#include "CloudDB.hpp"
 
-#include "Cache.hpp"
-#include "FrequencySmoother.hpp"
 
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
-#define outFilePath "/home/narahari387/Desktop/outFile.txt"
+std::unordered_set<std::string> keys;
+
+
+void KeySetup(std::string fileName) {
+	if(boost::filesystem::exists(fileName)){
+		std::ifstream ifs(fileName);
+		boost::archive::text_iarchive ia(ifs);
+		ia >> keys;
+		ifs.close();
+	}
+}
+
+void KeyCleanup(std::string fileName) {
+	std::ofstream ofs(fileName);
+	boost::archive::text_oarchive oa(ofs);
+	oa << keys;
+	ofs.close();
+}
+
+void signal_callback_handler(int signum) {
+   KeyCleanup(SAVE_FILE);
+   exit(signum);
+}
+
+
+
+
 
 int main(int argc, char* argv[])
 {
+	signal(SIGINT, signal_callback_handler);
+	KeySetup(SAVE_FILE);
+
 
 	if(sodium_init() < 0) {
         std::cerr << "Sodium couldn't be initialized" << std::endl;
@@ -36,19 +76,19 @@ int main(int argc, char* argv[])
 
 	Record* valueRecord;
 
-	FrequencySmoother fs(20, 10, "/home/narahari387/Desktop/freqFile.txt", "/home/narahari387/Desktop/waffle/proxy/secretKeys/sodiumKey");
-
-	Cache cache(2000, &fs);
-
 	FILE* outFile = fopen(outFilePath, "wb");
+
+	CloudDB db(KEY_FILE);
 
 	while(1){
 
-		printf("Getting op\n");
-
+		std::cout << ">";
 		std::cin >> operationType;
-		std::cin >> key;
-		std::cin >> value;
+		std::transform(operationType.begin(), operationType.end(), operationType.begin(), ::tolower);
+		if(operationType != "quit")
+			std::cin >> key;
+		if(operationType == "put")
+			std::cin >> value;
 
 		if(std::cin.eof()) break;
 
@@ -56,36 +96,29 @@ int main(int argc, char* argv[])
 
 		if(operationType == "get")
 		{
-			valueRecord = fs.get(key);
-			if(valueRecord){
-				printf("Record Size: %d\n", valueRecord->size);
-				fseek(outFile, 0, SEEK_SET);
-				fwrite(valueRecord->data, 1, valueRecord->size, outFile);
+			if(keys.find(key) != keys.end()){
+				Record* rec = db.get(key);
+				printf("%s\n", rec->data);
+
+				db.put(rec);
 			}
-			else printf("Record not found\n");
+			else{
+				std::cout << "Key does not exist in db" << std::endl;
+			}
+			
 		}
 		else if(operationType == "put")
 		{
-			char* valueData = (char*)malloc(value.size() + 1);
-			memcpy(valueData, value.c_str(), value.size() + 1);
-			valueRecord = new Record(key, valueData, value.size() + 1, std::chrono::system_clock::now());
-			fs.put(valueRecord);
-			delete valueRecord;
-		}
-		else if(operationType == "freq")
-		{
-			std::cerr << "Printing frequencies" << std::endl;
-			fs.printFrequencies();
+			Record* rec = new Record(key, value.c_str(), VALUE_SIZE);
+			if(keys.find(key) != keys.end())
+				db.get(key);
+			db.put(rec);
+			keys.insert(key);
 		}
 		else if(operationType == "quit")
-		{
-			fs.serialize("freqFile");
+		{	
+			KeyCleanup(SAVE_FILE);
 			exit(0);
-		}
-		else if(operationType == "stats")
-		{
-			fs.printStatistics();
-			cache.printStatistics();
 		}
 	}
 

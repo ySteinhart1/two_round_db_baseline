@@ -25,6 +25,8 @@ using namespace boost::asio;
 using namespace boost::asio::ip;
 using namespace std::chrono;
 
+#define VALUE_SIZE 160
+
 
 #define MAX_KEY 10000
 #define VALUE_SIZE 1000
@@ -64,7 +66,8 @@ int main(int argc, char* argv[])
         store.put(valueRecord);
         delete valueRecord;
 
-        value = "2";
+        randombytes_buf(val, VALUE_SIZE);
+        value = std::string(val);
 
         auto start = high_resolution_clock::now();
 

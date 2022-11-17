@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <utility>
 
+#include <iostream>
+
 #include <unistd.h>
 
 #include "Operation.hpp"
@@ -26,11 +28,13 @@ int main() {
 	while(1) {
 
 		op = proxyConn.getOperation();
+		// std::cout << op.key << std::endl;
 
 		if(op.type == GET) {
 			std::string result = store.get(op.key);
 			proxyConn.sendResult(result);
 		} else if(op.type == PUT) {
+			// std::cout << op.value.data << std::endl;
 			store.put(op.key, op.value);
 		}
 
