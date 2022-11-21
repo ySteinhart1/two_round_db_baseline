@@ -28,7 +28,8 @@ std::string decrypt(std::string& ciphertext){
     result.resize(VALUE_SIZE);
     unsigned char* c_text = (unsigned char*)ciphertext.c_str();
     if (crypto_secretbox_open_easy((unsigned char*)&result[0], c_text, CIPHERTEXT_LEN, c_text + CIPHERTEXT_LEN, sodiumKey) != 0) {
-        return NULL;
+        std::cout << "BAD DECRYPTION" << std::endl;
+        exit(1);
     }
     return result;
 
