@@ -78,7 +78,7 @@ void KeyCleanup(std::string fileName) {
 }
 
 void handleOp(Operation op, std::string* _return, KV_RPCClient& client){
-  std::cout << op << std::endl;
+  // std::cout << op << std::endl;
     if(op.op == "get"){
 			if(valueSizes.find(op.key) != valueSizes.end() && locks[op.key].exchange(false)){
                 Entry getEntry = constructGetEntry(op.key);
@@ -89,6 +89,7 @@ void handleOp(Operation op, std::string* _return, KV_RPCClient& client){
                 std::string tmp;
                 client.access(tmp, putEntry);
                 locks[op.key].exchange(true);
+                ++accesses;
 			}
 			else{
 				*_return = "Key not found or another transaction blocked this";
@@ -106,7 +107,11 @@ void handleOp(Operation op, std::string* _return, KV_RPCClient& client){
         std::string tmp;
         client.access(*_return, putEntry);
         locks[op.key].exchange(true);
+        ++accesses;
 		}
+    else{
+      ++aborted;
+    }
 }
 
 
