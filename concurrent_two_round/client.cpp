@@ -65,7 +65,9 @@ int main() {
             }
             std::string val;
             client.access(val, op);
-            std::cout << val << std::endl;
+            if(op.op == "get"){
+                std::cout << val << std::endl;
+            }
         }    
 
         transport->close();

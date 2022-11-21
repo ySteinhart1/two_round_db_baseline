@@ -58,9 +58,10 @@ Operation randGenOperation(){
     int key = rand()% KEY_MAX;
     op.__set_key(std::string(std::to_string(key)));
     if(op.op == "get"){
-        char value[VALUE_SIZE];
-        randombytes_buf(value, VALUE_SIZE);
-        op.__set_value(std::string(value));
+        std::string value;
+        value.resize(VALUE_SIZE);
+        randombytes_buf(&value[0], VALUE_SIZE);
+        op.__set_value(value);
     }
     return op;
 
