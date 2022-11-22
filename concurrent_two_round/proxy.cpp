@@ -98,16 +98,23 @@ void handleOp(Operation op, std::string* _return, KV_RPCClient& client){
 			
 		}
 		else if(locks[op.key].exchange(false)){
-			if(valueSizes.find(op.key) != valueSizes.end()){
-            Entry getEntry = constructGetEntry(op.key);
-            client.access(*_return, getEntry);
-        }
+		  if(valueSizes.find(op.key) == valueSizes.end()){
+        valueSizes[op.key] = op.value.size();
+        Entry putEntry = constructPutEntry(op.key, op.value);
+        client.create(putEntry);
+        locks[op.key].exchange(true);
+        ++accesses;
+      }
+      else{
+        Entry getEntry = constructGetEntry(op.key);
+        client.access(*_return, getEntry);
         Entry putEntry = constructPutEntry(op.key, op.value);
         valueSizes[op.key] = op.value.size();
         std::string tmp;
         client.access(*_return, putEntry);
         locks[op.key].exchange(true);
         ++accesses;
+      }
 		}
     else{
       ++aborted;
