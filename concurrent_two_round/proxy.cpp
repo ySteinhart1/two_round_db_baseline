@@ -81,15 +81,15 @@ void handleOp(Operation op, std::string* _return, KV_RPCClient& client){
   // std::cout << op << std::endl;
     if(op.op == "get"){
 			if(valueSizes.find(op.key) != valueSizes.end() && locks[op.key].exchange(false)){
-                Entry getEntry = constructGetEntry(op.key);
-                std::string ciphertext;
-                client.access(ciphertext, getEntry);
-                *_return = decrypt(ciphertext).substr(0, valueSizes[op.key]);
-                Entry putEntry = constructPutEntry(op.key, *_return);
-                std::string tmp;
-                client.access(tmp, putEntry);
-                locks[op.key].exchange(true);
-                ++accesses;
+        Entry getEntry = constructGetEntry(op.key);
+        std::string ciphertext;
+        client.access(ciphertext, getEntry);
+        *_return = decrypt(ciphertext).substr(0, valueSizes[op.key]);
+        Entry putEntry = constructPutEntry(op.key, *_return);
+        std::string tmp;
+        client.access(tmp, putEntry);
+        locks[op.key].exchange(true);
+        ++accesses;
 			}
 			else{
 				*_return = "Key not found or another transaction blocked this";
@@ -128,9 +128,7 @@ class Send_OpHandler : virtual public Send_OpIf {
  public:
 
   Send_OpHandler() {
-    
     KeySetup(SAVE_FILE);
-
   }
 
   void access(std::string& _return, const Operation& operation) {

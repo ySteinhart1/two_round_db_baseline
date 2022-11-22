@@ -50,7 +50,7 @@ Operation randGenOperation(){
     float r = (float) rand()/RAND_MAX;
     Operation op;
     if(r < 0.5){
-        op.__set_op("out");
+        op.__set_op("put");
     }
     else{
         op.__set_op("get");
