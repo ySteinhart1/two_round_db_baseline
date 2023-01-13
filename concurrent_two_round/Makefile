@@ -1,7 +1,7 @@
 CXX = g++
 CPPFLAGS = -g -std=c++17
 
-ALL = keygen proxy client server clients
+ALL = keygen proxy client server clients bundledProxy
 
 all: $(ALL)
 
@@ -9,6 +9,9 @@ keygen: keygen.cpp
 	$(CXX) $(CPPFLAGS) keygen.cpp -lsodium -o keygen
 
 proxy: proxy.cpp gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/Send_Op.o gen-cpp/Operation_types.o crypto_ops.o
+	g++ $(CPPFLAGS) $^ -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o $@
+
+bundledProxy: bundledProxy.cpp gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o gen-cpp/Send_Op.o gen-cpp/Operation_types.o crypto_ops.o
 	g++ $(CPPFLAGS) $^ -lboost_filesystem -lboost_serialization -lthrift -lsodium -pthread -fPIC -o $@
 
 server: server.cpp gen-cpp/KV_RPC.o gen-cpp/KV_RPC_types.o
